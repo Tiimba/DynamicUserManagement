@@ -34,14 +34,20 @@ async def groups(hostname):
     return {"detail": {"groups": server.get_groups()}}
 
 
-@app.post("/{hostname}/create_user/")
+@app.post("/{hostname}/user/create")
 async def create_user(hostname, user: User):
     server = Unix(hostname=hostname,
                   credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
                                "ssh_pass": None})
     user_dict = user.dict()
-    print(user_dict)
-    return {"detail": {
-        "user": server.create_user(username=user_dict["username"], password=user_dict["password"],
-                                   groups=user_dict["groups"],
-                                   create_home=user_dict["home"], shell=user_dict["shell"])}}
+    return {"detail": server.create_user(username=user_dict["username"], password=user_dict["password"],
+                                         groups=user_dict["groups"],
+                                         create_home=user_dict["home"], shell=user_dict["shell"])}
+
+
+@app.get("/{hostname}/user/unlock/{username}")
+async def unlock_user(hostname, username):
+    server = Unix(hostname=hostname,
+                  credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
+                               "ssh_pass": None})
+    return {"detail": server.unlock_user(user=username)}

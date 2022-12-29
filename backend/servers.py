@@ -9,7 +9,8 @@ class Unix:
         "getusers": "cat /etc/passwd",
         "getusergroups": "groups",
         "getgroups": "cat /etc/group",
-        "createuser": "useradd"
+        "createuser": "useradd",
+        "unlockuser": "usermod -u"
     }
 
     def __init__(self, hostname, credentials: dict):
@@ -137,23 +138,60 @@ class Unix:
 
         command += f" {username}"
 
-        self.sshcon.exec_command(command)
-        print(command)
-        if password:
-            if password == 'random':
-                password = self._generate_password()
+        (stdin, stdout, stderr) = self.sshcon.exec_command(command)
+        exit_code = stdout.channel.recv_exit_status()
+        if exit_code == 0:
+            if password:
+                if password == 'random':
+                    password = self._generate_password()
 
-            passwd_command = f"usermod --password $(echo {password} | openssl passwd -1 -stdin) {username}"
-            self.sshcon.exec_command(passwd_command)
+                passwd_command = f"usermod --password $(echo {password} | openssl passwd -1 -stdin) {username}"
+                (stdin, stdout, stderr) = self.sshcon.exec_command(passwd_command)
 
-        user_created = {
-            "username": username,
-            "password": password,
-            "groups": groups,
-            "home": create_home,
-            "shell": shell
-        }
-        return user_created
+            return_data = {
+                "username": username,
+                "password": password,
+                "groups": groups,
+                "home": create_home,
+                "shell": shell,
+                "status": "Created"
+            }
+        elif exit_code == 9:
+            return_data = {
+                "username": username,
+                "status": "User already exists"
+            }
+        else:
+            return_data = {
+                "username": username,
+                "status": "Error on creating"
+            }
+
+        return return_data
+
+    def unlock_user(self, user):
+        if self.connected:
+            print(f"{self.UX_CMDS['unlockuser']} {user}")
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
+            exit_code = stdout.channel.recv_exit_status()
+            print(stderr.readline())
+            if exit_code == 0:
+                return {
+                    "username": user,
+                    "status": "Unlocked"
+                }
+            elif exit_code == 3:
+                return {
+                    "username": user,
+                    "status": "User does not exist"
+                }
+            else:
+                return {
+                    "username": user,
+                    "status": "Error while unlocking"
+                }
+        else:
+            return self.error_msg
 
     def kill_connection(self):
         if self.connected:
@@ -163,13 +201,10 @@ class Unix:
             self.connected = False
         else:
             print("Não há sessão aberta")
-    # TO_DO
-    # def unlock_user(self, user):
-    #
 
 # if __name__ == '__main__':
 #     amigo = Unix(hostname="192.168.0.108",
 #                  credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
 #                               "ssh_pass": None})
 #     print(amigo.create_user("testevazio2"))
-    # print(amigo.get_users())
+# print(amigo.get_users())
