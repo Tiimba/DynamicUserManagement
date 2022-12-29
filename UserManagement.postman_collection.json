@@ -1,0 +1,100 @@
+{
+	"info": {
+		"_postman_id": "3aed32ce-824e-4833-9b6d-778e4fa3a9ef",
+		"name": "UserManagement",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11119675"
+	},
+	"item": [
+		{
+			"name": "Localhost",
+			"item": [
+				{
+					"name": "Get Root",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/users",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/groups",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"testeapi\",\r\n    \"password\" : \"mudar123\",\r\n    \"home\":  true,\r\n    \"groups\" : [\"root\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/create_user/",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"create_user",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
