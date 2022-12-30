@@ -53,6 +53,7 @@ async def unlock_user(hostname, username):
                                "ssh_pass": None})
     return {"detail": server.unlock_user(user=username)}
 
+
 @app.get("/{hostname}/user/lock/{username}")
 async def unlock_user(hostname, username):
     server = Unix(hostname=hostname,
