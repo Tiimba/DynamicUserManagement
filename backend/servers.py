@@ -10,7 +10,8 @@ class Unix:
         "getusergroups": "groups",
         "getgroups": "cat /etc/group",
         "createuser": "useradd",
-        "unlockuser": "usermod -u",
+        "unlockuser": "passwd -u",
+        "lockuser": "passwd -L",
         "deleteuser": "userdel"
     }
 
@@ -122,8 +123,10 @@ class Unix:
         password = ''.join(random.choice(string.printable) for i in range(8))
         return password
 
-    def create_user(self, username, password=None, groups=None, create_home: bool = False, shell=None):
+    def create_user(self, username, password=None, comments=None, groups=None, create_home: bool = False, shell=None):
         command = f"sudo useradd"
+        if comments:
+            command += f' -c "{comments}"'
         if create_home:
             command += " -m"
             create_home = "created"
@@ -146,29 +149,40 @@ class Unix:
                 if password == 'random':
                     password = self._generate_password()
 
-                passwd_command = f"usermod --password $(echo {password} | openssl passwd -1 -stdin) {username}"
+                passwd_command = f'echo -e "{password}\n{password}" | sudo passwd {username}'
                 (stdin, stdout, stderr) = self.sshcon.exec_command(passwd_command)
+                exit_code = stdout.channel.recv_exit_status()
+                if exit_code == 0:
+                    return {
+                        "username": username,
+                        "password": password,
+                        "comments": comments,
+                        "groups": groups,
+                        "home": create_home,
+                        "shell": shell,
+                        "status": "Created"
+                    }
 
-            return_data = {
-                "username": username,
-                "password": password,
-                "groups": groups,
-                "home": create_home,
-                "shell": shell,
-                "status": "Created"
-            }
+                else:
+                    return {
+                        "username": username,
+                        "password": password,
+                        "comments": comments,
+                        "groups": groups,
+                        "home": create_home,
+                        "shell": shell,
+                        "status": "Created but password was not set"
+                    }
         elif exit_code == 9:
-            return_data = {
+            return {
                 "username": username,
                 "status": "User already exists"
             }
         else:
-            return_data = {
+            return {
                 "username": username,
                 "status": "Error on creating"
             }
-
-        return return_data
 
     def unlock_user(self, user):
         if self.connected:
@@ -176,12 +190,13 @@ class Unix:
             (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
             exit_code = stdout.channel.recv_exit_status()
             print(stderr.readline())
+            print(exit_code)
             if exit_code == 0:
                 return {
                     "username": user,
                     "status": "Unlocked"
                 }
-            elif exit_code == 3:
+            elif exit_code == 1:
                 return {
                     "username": user,
                     "status": "User does not exist"
@@ -190,6 +205,28 @@ class Unix:
                 return {
                     "username": user,
                     "status": "Error while unlocking"
+                }
+        else:
+            return self.error_msg
+
+    def lock_user(self, user):
+        if self.connected:
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
+            exit_code = stdout.channel.recv_exit_status()
+            if exit_code == 0:
+                return {
+                    "username": user,
+                    "status": "Locked"
+                }
+            elif exit_code == 1:
+                return {
+                    "username": user,
+                    "status": "User does not exist"
+                }
+            else:
+                return {
+                    "username": user,
+                    "status": "Error while locking"
                 }
         else:
             return self.error_msg

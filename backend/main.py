@@ -42,6 +42,7 @@ async def create_user(hostname, user: User):
     user_dict = user.dict()
     return {"detail": server.create_user(username=user_dict["username"], password=user_dict["password"],
                                          groups=user_dict["groups"],
+                                         comments=user_dict["comments"],
                                          create_home=user_dict["home"], shell=user_dict["shell"])}
 
 
@@ -51,6 +52,13 @@ async def unlock_user(hostname, username):
                   credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
                                "ssh_pass": None})
     return {"detail": server.unlock_user(user=username)}
+
+@app.get("/{hostname}/user/lock/{username}")
+async def unlock_user(hostname, username):
+    server = Unix(hostname=hostname,
+                  credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
+                               "ssh_pass": None})
+    return {"detail": server.lock_user(user=username)}
 
 
 @app.delete("/{hostname}/user/{user}")

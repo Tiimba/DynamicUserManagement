@@ -72,7 +72,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"testeapi\",\r\n    \"password\" : \"mudar123\",\r\n    \"home\":  true,\r\n    \"groups\" : [\"root\"]\r\n}",
+							"raw": "{\r\n    \"username\": \"testeapi\",\r\n    \"password\": \"mudar123\",\r\n    \"home\": true,\r\n    \"comments\": \"usuario de teste\",\r\n    \"groups\": [\r\n        \"root\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -80,15 +80,101 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8000/192.168.0.108/create_user/",
+							"raw": "localhost:8000/192.168.0.108/user/create",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
 								"192.168.0.108",
-								"create_user",
-								""
+								"user",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unlock User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/user/unlock/testeapi",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"user",
+								"unlock",
+								"testeapi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lock User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/user/lock/testeapi",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"user",
+								"lock",
+								"testeapi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/192.168.0.108/user/testeapi",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"192.168.0.108",
+								"user",
+								"testeapi"
 							]
 						}
 					},
