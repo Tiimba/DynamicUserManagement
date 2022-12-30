@@ -10,7 +10,8 @@ class Unix:
         "getusergroups": "groups",
         "getgroups": "cat /etc/group",
         "createuser": "useradd",
-        "unlockuser": "usermod -u"
+        "unlockuser": "usermod -u",
+        "deleteuser": "userdel"
     }
 
     def __init__(self, hostname, credentials: dict):
@@ -189,6 +190,30 @@ class Unix:
                 return {
                     "username": user,
                     "status": "Error while unlocking"
+                }
+        else:
+            return self.error_msg
+
+    def delete_user(self, user):
+        if self.connected:
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['deleteuser']} {user}")
+            exit_code = stdout.channel.recv_exit_status()
+
+            if exit_code == 0:
+                return {
+                    "username": user,
+                    "status": "deleted"
+                }
+
+            elif exit_code == 6:
+                return {
+                    "username": user,
+                    "status": "User does not exist"
+                }
+            else:
+                return {
+                    "username": user,
+                    "status": f"Error on delete user.\n{stderr.readline()}"
                 }
         else:
             return self.error_msg

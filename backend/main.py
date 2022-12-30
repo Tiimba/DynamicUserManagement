@@ -51,3 +51,11 @@ async def unlock_user(hostname, username):
                   credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
                                "ssh_pass": None})
     return {"detail": server.unlock_user(user=username)}
+
+
+@app.delete("/{hostname}/user/{user}")
+async def delete_user(hostname, user):
+    server = Unix(hostname=hostname,
+                  credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
+                               "ssh_pass": None})
+    return {"detail": server.delete_user(user)}
