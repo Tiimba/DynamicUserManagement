@@ -38,14 +38,14 @@ class Unix:
 
         except paramiko.ssh_exception.AuthenticationException as error:
             print("Error ao autenticar, usuário sem acesso.")
-            print(str(error))
+            self.error_msg = f"Error ao autenticar, usuário sem acesso. {str(error)}"
             self.connected = False
         except paramiko.ssh_exception.NoValidConnectionsError as error:
             self.connected = False
             self.error_msg = str(error)
         except socket.gaierror as error:
             print(f"O Servidor {self.hostname} não foi encontrado.\n{str(error)}")
-            self.error_msg = str(error)
+            self.error_msg = f"O Servidor {self.hostname} não foi encontrado.\n{str(error)}"
             self.connected = False
         except Exception as error:
             print(f"Erro inesperado.\n{str(error)}")
@@ -84,17 +84,24 @@ class Unix:
                     user_obj["shell"] = str_line.split(':')[6]
                     user_obj["groups"] = self.get_groups(user_obj["username"])
                     users.append(user_obj)
-
-                return users
+                return {
+                    "users": users,
+                    "status": "ok",
+                    "os_exit_code": exit_code
+                }
+            else:
+                return {
+                    "status": "nok",
+                    "os_exit_code": exit_code
+                }
         else:
-
             return self.error_msg
 
     def get_groups(self, username=None):
         if self.connected:
-            groups = None
             if username:
                 (stdin, stdout, stderr) = self.sshcon.exec_command(f"{self.UX_CMDS['getusergroups']} {username}")
+                exit_code = stdout.channel.recv_exit_status()
                 groups = stdout.readline().strip().split(":")[1].strip().split(" ")
             else:
                 (stdin, stdout, stderr) = self.sshcon.exec_command(self.UX_CMDS["getgroups"])
@@ -115,7 +122,16 @@ class Unix:
                         group_obj["members"] = str_line.split(':')[3].splitlines()
 
                         groups.append(group_obj)
-            return groups
+                    return {
+                        "groups": groups,
+                        "status": "ok",
+                        "os_exit_code": exit_code
+                    }
+                else:
+                    return {
+                        "status": "no",
+                        "os_exit_code": exit_code
+                    }
         else:
             return self.error_msg
 
@@ -160,7 +176,8 @@ class Unix:
                         "groups": groups,
                         "home": create_home,
                         "shell": shell,
-                        "status": "Created"
+                        "status": "Created",
+                        "os_exit_code": exit_code
                     }
 
                 else:
@@ -171,40 +188,43 @@ class Unix:
                         "groups": groups,
                         "home": create_home,
                         "shell": shell,
-                        "status": "Created but password was not set"
+                        "status": "Created but password was not set",
+                        "os_exit_code": exit_code
                     }
         elif exit_code == 9:
             return {
                 "username": username,
-                "status": "User already exists"
+                "status": "User already exists",
+                "os_exit_code": exit_code
             }
         else:
             return {
                 "username": username,
-                "status": "Error on creating"
+                "status": "Error on creating",
+                "os_exit_code": exit_code
             }
 
     def unlock_user(self, user):
         if self.connected:
-            print(f"{self.UX_CMDS['unlockuser']} {user}")
             (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
             exit_code = stdout.channel.recv_exit_status()
-            print(stderr.readline())
-            print(exit_code)
             if exit_code == 0:
                 return {
                     "username": user,
-                    "status": "Unlocked"
+                    "status": "Unlocked",
+                    "os_exit_code": exit_code
                 }
             elif exit_code == 1:
                 return {
                     "username": user,
-                    "status": "User does not exist"
+                    "status": "User does not exist",
+                    "os_exit_code": exit_code
                 }
             else:
                 return {
                     "username": user,
-                    "status": "Error while unlocking"
+                    "status": "Error while unlocking",
+                    "os_exit_code": exit_code
                 }
         else:
             return self.error_msg
@@ -216,17 +236,20 @@ class Unix:
             if exit_code == 0:
                 return {
                     "username": user,
-                    "status": "Locked"
+                    "status": "Locked",
+                    "os_exit_code": exit_code
                 }
             elif exit_code == 1:
                 return {
                     "username": user,
-                    "status": "User does not exist"
+                    "status": "User does not exist",
+                    "os_exit_code": exit_code
                 }
             else:
                 return {
                     "username": user,
-                    "status": "Error while locking"
+                    "status": "Error while locking",
+                    "os_exit_code": exit_code
                 }
         else:
             return self.error_msg
@@ -239,18 +262,21 @@ class Unix:
             if exit_code == 0:
                 return {
                     "username": user,
-                    "status": "deleted"
+                    "status": "deleted",
+                    "os_exit_code": exit_code
                 }
 
             elif exit_code == 6:
                 return {
                     "username": user,
-                    "status": "User does not exist"
+                    "status": "User does not exist",
+                    "os_exit_code": exit_code
                 }
             else:
                 return {
                     "username": user,
-                    "status": f"Error on delete user.\n{stderr.readline()}"
+                    "status": f"Error on delete user.\n{stderr.readline()}",
+                    "os_exit_code": exit_code
                 }
         else:
             return self.error_msg

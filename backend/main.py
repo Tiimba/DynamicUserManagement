@@ -19,7 +19,7 @@ async def users(hostname):
 
 
 @app.get("/{hostname}/os")
-async def users(hostname):
+async def os(hostname):
     server = Unix(hostname=hostname,
                   credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
                                "ssh_pass": None})
