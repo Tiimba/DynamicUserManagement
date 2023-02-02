@@ -1,9 +1,24 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from servers import Unix
 from models import User
 
 app = FastAPI()
 
+# origins = [
+#     "http://localhost.tiangolo.com",
+#     "https://localhost.tiangolo.com",
+#     "http://localhost",
+#     "http://localhost:8000",
+# ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
@@ -15,7 +30,7 @@ async def users(hostname):
     server = Unix(hostname=hostname,
                   credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
                                "ssh_pass": None})
-    return {"detail": {"users": server.get_users()}}
+    return {"detail": server.get_users()}
 
 
 @app.get("/{hostname}/os")

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/main.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+    </head>
+    <body>
+        
+        <form onsubmit="getData(event)">
+            <label for="ip-input" style="font-size: 16px; font-weight: bold; color: #555555;">Endereço IP:</label>
+            <input type="text" id="ip-input">
+            <button type="submit" id="button-submit" class="modern-button">Enviar</button>
+          </form>
+          
+        <table id="data-table">
+            <thead>
+            <tr>
+                <th>Username</th>
+                <th>UID</th>
+                <th>Comentário</th>
+            </tr>
+            </thead>
+            <tbody id="data-body">
+            </tbody>
+        </table>
+    </body>
+</html>
