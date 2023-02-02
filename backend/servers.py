@@ -12,7 +12,8 @@ class Unix:
         "createuser": "useradd",
         "unlockuser": "passwd -u",
         "lockuser": "passwd -L",
-        "deleteuser": "userdel"
+        "deleteuser": "userdel",
+        "check_user_lock": "passwd -S"
     }
 
     def __init__(self, hostname, credentials: dict):
@@ -80,50 +81,42 @@ class Unix:
             user_obj["username"], user_obj["password"], user_obj["uid"], user_obj["gid"], user_obj["comment"], user_obj[
                 "homedirectory"], user_obj["shell"] = str_line.split(':')
             user_obj["groups"] = self.get_groups(user_obj["username"])
+            user_obj["locked"] = self.get_user_lock_state(user_obj["username"])
             users.append(user_obj)
 
         return {"users": users, "status": "ok" if exit_code == 0 else "nok", "os_exit_code": exit_code}
 
     def get_groups(self, username=None):
-        if self.connected:
-            if username:
-                (stdin, stdout, stderr) = self.sshcon.exec_command(f"{self.UX_CMDS['getusergroups']} {username}")
-                exit_code = stdout.channel.recv_exit_status()
-                groups = stdout.readline().strip().split(":")[1].strip().split(" ")
-            else:
-                (stdin, stdout, stderr) = self.sshcon.exec_command(self.UX_CMDS["getgroups"])
+        if not self.connected:
+            return {"status": "nok", "message": self.error_msg}
 
-                stdout._set_mode("rb")
-                lines = stdout.readlines()
-                exit_code = stdout.channel.recv_exit_status()
-
-                if exit_code == 0:
-                    groups = []
-                    for line in lines:
-                        group_obj = dict()
-                        str_line = line.decode('latin1')
-                        group_obj["groupname"] = str_line.split(':')[0]
-                        group_obj["password"] = str_line.split(':')[1]
-                        group_obj["gid"] = str_line.split(':')[2]
-
-                        group_obj["members"] = str_line.split(':')[3].splitlines()
-
-                        groups.append(group_obj)
-                    return {
-                        "groups": groups,
-                        "status": "ok",
-                        "os_exit_code": exit_code
-                    }
-                else:
-                    return {
-                        "status": "no",
-                        "os_exit_code": exit_code
-                    }
+        if username:
+            command = f"{self.UX_CMDS['getusergroups']} {username}"
         else:
-            return {
-                "status": "nok",
-                "message": self.error_msg
+            command = self.UX_CMDS["getgroups"]
+
+        stdin, stdout, stderr = self.sshcon.exec_command(command)
+        # stdout._set_mode("rb")
+        exit_code = stdout.channel.recv_exit_status()
+
+        if exit_code != 0:
+            return {"status": "no", "os_exit_code": exit_code}
+
+        if username:
+            groups = stdout.readline().strip().split(":")[1].strip().split(" ")
+            return {"groups": groups, "status": "ok", "os_exit_code": exit_code}
+
+        lines = stdout.readlines()
+        groups = [
+            {
+                "groupname": line.split(":")[0],
+                "password": line.split(":")[1],
+                "gid": line.split(":")[2],
+                "members": line.split(":")[3].splitlines(),
             }
+            for line in lines
+        ]
+        return {"groups": groups, "status": "ok", "os_exit_code": exit_code}
 
     def _generate_password(self):
         password = ''.join(random.choice(string.printable) for i in range(8))
@@ -265,9 +258,29 @@ class Unix:
         else:
             print("Não há sessão aberta")
 
+    def get_user_lock_state(self, username):
+        if not self.sshcon.get_transport().is_alive():
+            return {
+                "status": "nok",
+                "message": self.error_msg
+            }
+        (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['check_user_lock']} {username}")
+        exit_code = stdout.channel.recv_exit_status()
+
+        if exit_code == 0:
+            result = stdout.readline()
+            user_lock_state = result.split(" ")[1]
+            status_map = {
+                "P": "Unlocked",
+                "L": "Locked",
+            }
+            return status_map.get(user_lock_state, "Status Not Mapped")
+        else:
+            raise Exception("Error")
+
+
 # if __name__ == '__main__':
-#     amigo = Unix(hostname="192.168.0.108",
+#     amigo = Unix(hostname="192.168.0.104",
 #                  credentials={"connection_type": "password", "username": "timba", "password": "mudar123",
 #                               "ssh_pass": None})
-#     print(amigo.create_user("testevazio2"))
-# print(amigo.get_users())
+#     amigo.get_users()

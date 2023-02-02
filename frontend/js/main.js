@@ -1,6 +1,10 @@
 function getData(event) {
     event.preventDefault();
     let ip = document.getElementById("ip-input").value;
+    if (!ip) {
+        window.alert("O campo de entrada de IP está vazio. Por favor, insira um endereço IP válido.");
+        return;
+    }
     fetchData(ip);
 }
 
@@ -15,9 +19,9 @@ function fetchData(ip) {
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        
+
         // Limpa a tabela antes de adicionar novos conteúdos
-        
+
         if (data["detail"]["status"] === "nok") {
             // Exibe uma mensagem de erro em vez de adicionar a tabela
             let message = data["detail"]["message"];
@@ -30,6 +34,7 @@ function fetchData(ip) {
                 <td>${item.username}</td>
                 <td>${item.uid}</td>
                 <td>${item.comment}</td>
+                <td>${item.locked}</td>
               `;
               tableBody.appendChild(row);
             });
