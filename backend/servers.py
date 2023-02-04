@@ -53,14 +53,13 @@ class Unix:
             return False
 
     def get_os(self):
-        if self.connected:
-            try:
-                (stdin, stdout, stderr) = self.sshcon.exec_command(self.UX_CMDS["getos"])
-                return stdout.readline().strip()
-            except paramiko.ssh_exception.SSHException as error:
-                print(f"Error.\n{str(error)}")
-        else:
-            return self.error_msg
+        if not self.connected:
+            return {"status": "nok", "message": self.error_msg}
+        try:
+            stdin, stdout, stderr = self.sshcon.exec_command(self.UX_CMDS["getos"])
+            return {"status": "ok", "os": stdout.readline().strip()}
+        except paramiko.ssh_exception.SSHException as error:
+            return {"status": "nok", "message": str(error)}
 
     def get_users(self):
         if not self.connected:
@@ -277,7 +276,6 @@ class Unix:
             return status_map.get(user_lock_state, "Status Not Mapped")
         else:
             raise Exception("Error")
-
 
 # if __name__ == '__main__':
 #     amigo = Unix(hostname="192.168.0.104",

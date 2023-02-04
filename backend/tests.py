@@ -6,7 +6,7 @@ from servers import Unix
 class TestUnixClass(unittest.TestCase):
     # MockVars
     credentials = {"username": "timba", "password": "mudar123", "connection_type": "password"}
-    hostname = "192.168.0.104"
+    hostname = "192.168.0.106"
 
     def test_init(self):
         # Testa se o objeto Unix é iniciado corretamente
@@ -30,7 +30,8 @@ class TestUnixClass(unittest.TestCase):
     def test_get_os(self):
         # Testa se o método get_os retorna o sistema operacional correto
         unix = Unix(self.hostname, self.credentials)
-        self.assertIsNotNone(unix.get_os())
+        result = unix.get_os()
+        self.assertEqual(result["status"], "ok")
 
     def test_get_users(self):
         # Testa se o método get_users retorna a lista de usuários correta
