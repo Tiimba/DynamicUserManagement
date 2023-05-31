@@ -181,6 +181,196 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "var_setted_host_ip-port",
+			"item": [
+				{
+					"name": "Get Root",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/users",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get groups",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/groups",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"testeapi\",\r\n    \"password\": \"mudar123\",\r\n    \"home\": true,\r\n    \"comments\": \"usuario de teste\",\r\n    \"groups\": [\r\n        \"root\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/user/create",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"user",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unlock User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/user/unlock/testeapi",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"user",
+								"unlock",
+								"testeapi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lock User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/user/lock/testeapi",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"user",
+								"lock",
+								"testeapi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{backend_host}}:{{backend_port}}/{{destination_host}}/user/testeapi",
+							"host": [
+								"{{backend_host}}"
+							],
+							"port": "{{backend_port}}",
+							"path": [
+								"{{destination_host}}",
+								"user",
+								"testeapi"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "backend_host",
+			"value": "192.168.0.115"
+		},
+		{
+			"key": "destination_host",
+			"value": "192.168.0.117"
+		},
+		{
+			"key": "backend_port",
+			"value": "8000"
 		}
 	]
 }
