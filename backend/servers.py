@@ -2,6 +2,12 @@ import socket
 import paramiko
 import random, string
 
+''' 
+    TODO: Create Windows Class ( Local and Active Directory )
+    TODO: Create DEBUG Mode
+    TODO: Create CLI Mode
+'''
+
 
 class Unix:
     UX_CMDS = {
@@ -33,7 +39,6 @@ class Unix:
 
             self.sshcon.connect(self.hostname, username=credentials["username"].lower(),
                                 password=connect_method, timeout=20)
-            print("Conectado com sucesso!")
             return True
 
         except paramiko.ssh_exception.AuthenticationException as error:
@@ -84,7 +89,35 @@ class Unix:
             users.append(user_obj)
 
         return {"users": users, "status": "ok" if exit_code == 0 else "nok", "os_exit_code": exit_code}
+    
+    def get_user(self, username):
+        """
+            Retorna informações sobre um usuário com base no nome de usuário fornecido.
+        Args:
+            username (str): O nome de usuário para procurar.
+        """
 
+        if not self.connected:
+            return {
+                "status": "nok",
+                "message": self.error_msg
+            }
+        get_user_command = f"cat /etc/passwd | grep {username}"
+        (stdin, stdout, stderr) = self.sshcon.exec_command(get_user_command)
+        stdout._set_mode("rb")
+        line = stdout.readline()
+        exit_code = stdout.channel.recv_exit_status()
+        if line:
+            user_obj = {}
+            str_line = line.decode('latin1')
+            user_obj["username"], user_obj["password"], user_obj["uid"], user_obj["gid"], user_obj["comment"], user_obj["homedirectory"], user_obj["shell"] = str_line.split(':')
+            user_obj["groups"] = self.get_groups(user_obj["username"])
+            user_obj["locked"] = self.get_user_lock_state(user_obj["username"])
+            return {"user": user_obj, "status": "ok" if exit_code == 0 else "nok", "os_exit_code": exit_code}
+        
+        else:
+            return {"user": None, "status": "User does not exist", "os_exit_code": 0}
+    
     def get_groups(self, username=None):
         if not self.connected:
             return {"status": "nok", "message": self.error_msg}

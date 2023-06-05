@@ -40,6 +40,13 @@ async def users(hostname):
     server = get_unix_server(hostname)
     return {"detail": server.get_users()}
 
+@app.get("/{hostname}/users/{username}/")
+async def user(hostname, username):
+    ''' Get specificied user '''
+
+    server = get_unix_server(hostname)
+    return {"deatil": server.get_user(username)}
+
 
 @app.get("/{hostname}/os")
 async def os(hostname):
