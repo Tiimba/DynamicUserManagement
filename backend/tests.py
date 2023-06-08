@@ -6,7 +6,7 @@ from servers import Unix
 class TestUnixClass(unittest.TestCase):
     # MockVars
     credentials = {"username": "timba", "password": "mudar123", "connection_type": "password"}
-    hostname = "192.168.0.106"
+    hostname = "192.168.0.116"
 
     def test_init(self):
         # Testa se o objeto Unix é iniciado corretamente

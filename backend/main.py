@@ -72,7 +72,6 @@ async def create_user(hostname, user: User):
                                          comments=user_dict["comments"],
                                          create_home=user_dict["home"], shell=user_dict["shell"])}
 
-
 @app.get("/{hostname}/user/unlock/{username}")
 async def unlock_user(hostname, username):
     server = get_unix_server(hostname)

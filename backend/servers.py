@@ -10,18 +10,6 @@ import random, string
 
 
 class Unix:
-    UX_CMDS = {
-        "getos": "uname",
-        "getusers": "cat /etc/passwd",
-        "getusergroups": "groups",
-        "getgroups": "cat /etc/group",
-        "createuser": "useradd",
-        "unlockuser": "passwd -u",
-        "lockuser": "passwd -L",
-        "deleteuser": "userdel",
-        "check_user_lock": "passwd -S"
-    }
-
     def __init__(self, hostname, credentials: dict):
         self.hostname = hostname
         self.sshcon = paramiko.SSHClient()
@@ -61,7 +49,7 @@ class Unix:
         if not self.connected:
             return {"status": "nok", "message": self.error_msg}
         try:
-            stdin, stdout, stderr = self.sshcon.exec_command(self.UX_CMDS["getos"])
+            stdin, stdout, stderr = self.sshcon.exec_command("uname")
             return {"status": "ok", "os": stdout.readline().strip()}
         except paramiko.ssh_exception.SSHException as error:
             return {"status": "nok", "message": str(error)}
@@ -73,7 +61,7 @@ class Unix:
                 "message": self.error_msg
             }
 
-        (stdin, stdout, stderr) = self.sshcon.exec_command(self.UX_CMDS["getusers"])
+        (stdin, stdout, stderr) = self.sshcon.exec_command("cat /etc/passwd")
         stdout._set_mode("rb")
         lines = stdout.readlines()
         exit_code = stdout.channel.recv_exit_status()
@@ -84,8 +72,9 @@ class Unix:
             str_line = line.decode('latin1')
             user_obj["username"], user_obj["password"], user_obj["uid"], user_obj["gid"], user_obj["comment"], user_obj[
                 "homedirectory"], user_obj["shell"] = str_line.split(':')
-            user_obj["groups"] = self.get_groups(user_obj["username"])
             user_obj["locked"] = self.get_user_lock_state(user_obj["username"])
+            user_obj["groups"] = self.get_groups(user_obj["username"])["groups"]
+            
             users.append(user_obj)
 
         return {"users": users, "status": "ok" if exit_code == 0 else "nok", "os_exit_code": exit_code}
@@ -111,8 +100,9 @@ class Unix:
             user_obj = {}
             str_line = line.decode('latin1')
             user_obj["username"], user_obj["password"], user_obj["uid"], user_obj["gid"], user_obj["comment"], user_obj["homedirectory"], user_obj["shell"] = str_line.split(':')
-            user_obj["groups"] = self.get_groups(user_obj["username"])
             user_obj["locked"] = self.get_user_lock_state(user_obj["username"])
+            user_obj["groups"] = self.get_groups(user_obj["username"])["groups"]
+            
             return {"user": user_obj, "status": "ok" if exit_code == 0 else "nok", "os_exit_code": exit_code}
         
         else:
@@ -123,9 +113,9 @@ class Unix:
             return {"status": "nok", "message": self.error_msg}
 
         if username:
-            command = f"{self.UX_CMDS['getusergroups']} {username}"
+            command = f"groups {username}"
         else:
-            command = self.UX_CMDS["getgroups"]
+            command = "cat /etc/group"
 
         stdin, stdout, stderr = self.sshcon.exec_command(command)
         # stdout._set_mode("rb")
@@ -206,7 +196,7 @@ class Unix:
 
     def unlock_user(self, user):
         if self.connected:
-            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo passwd -u {user}")
             exit_code = stdout.channel.recv_exit_status()
             if exit_code == 0:
                 return {
@@ -231,7 +221,7 @@ class Unix:
 
     def lock_user(self, user):
         if self.connected:
-            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['unlockuser']} {user}")
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo passwd -u{user}")
             exit_code = stdout.channel.recv_exit_status()
             if exit_code == 0:
                 return {
@@ -256,7 +246,7 @@ class Unix:
 
     def delete_user(self, user):
         if self.connected:
-            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['deleteuser']} {user}")
+            (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo userdel {user}")
             exit_code = stdout.channel.recv_exit_status()
 
             if exit_code == 0:
@@ -296,7 +286,7 @@ class Unix:
                 "status": "nok",
                 "message": self.error_msg
             }
-        (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo {self.UX_CMDS['check_user_lock']} {username}")
+        (stdin, stdout, stderr) = self.sshcon.exec_command(f"sudo passwd -S {username}")
         exit_code = stdout.channel.recv_exit_status()
 
         if exit_code == 0:

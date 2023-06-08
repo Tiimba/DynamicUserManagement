@@ -17,6 +17,13 @@ Backend:
 
 ### ChangeLOG
 ```
+0.0.4:
+- Added MongoDB Database
+- Added Authentication
+- Fix Groups exit code and status showing when looking for the users
+- UX_COMMANDS Dict remove from Unix Class
+
+
 0.0.3: 
 - Added the `get_user(self, username)` function to retrieve information about a user based on the provided username.
 - The function checks if it is connected before executing the user retrieval command. If not connected, it returns a dictionary with a "nok" status and an error message.
